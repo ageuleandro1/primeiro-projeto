@@ -1,30 +1,34 @@
-name: Build, Push Docker Image and Deploy to EKS
+name: Build and Deploy to EKS
 
 on:
   push:
     branches:
-      - main  # Altere se usar outra branch
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-region: sa-east-1
-          role-to-assume: arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_ROLE_NAME
-          role-session-name: github-actions-session
-          
-          # Se você não usar role, substitua por:
-          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-      - name: Login to Docker Hub
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.29.0'
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name cluster-html-2nodes --region us-east-1
+
+      - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -36,7 +40,7 @@ jobs:
       - name: Push Docker image
         run: docker push ageuleandro/app-html:${{ github.sha }}
 
-      - name: Update Kubernetes deployment image
+      - name: Deploy to EKS
         run: |
           kubectl set image deployment/meu-site nginx=ageuleandro/app-html:${{ github.sha }}
           kubectl rollout status deployment/meu-site
