@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: ageuleandro/app-html:v4
+        image: ageuleandro/app-html:15c347dbe05d11a894d53c30c846ea12f12f353a
         ports:
         - containerPort: 80
