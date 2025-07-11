@@ -26,7 +26,7 @@ jobs:
           version: 'v1.29.0'
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name cluster-html-2nodes --region us-east-1
+        run: aws eks update-kubeconfig --name cluster-html --region sa-east-1
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
